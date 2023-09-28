@@ -222,7 +222,6 @@ def linearregress(ds,data_type,min_yr,mx_yr,labels):
         columns = ds.columns
         column_list = ds.columns.tolist()
         stats = pd.DataFrame()
-        stats = pd.DataFrame()
         for i in column_list:
                 df = f[i]
                 # df = f[i].pct_change()

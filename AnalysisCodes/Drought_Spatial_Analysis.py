@@ -6,63 +6,7 @@
 
 
 # %%
-from cProfile import label
-from curses import nocbreak
-# from dbm import _ValueType
-from operator import ge
-from optparse import Values
-import os
-from geopandas.tools.sjoin import sjoin
-import matplotlib
-import matplotlib.pyplot as plt
-import matplotlib.lines as mlines
-from matplotlib.colors import ListedColormap
-import datetime
-from matplotlib.transforms import Bbox
-import seaborn as sns
-import numpy as np
-import pandas as pd
-from shapely.geometry import box
-import geopandas as gp
-#import earthpy as et
-import scipy.stats as sp
-from scipy.stats import kendalltau, pearsonr, spearmanr
-import pymannkendall as mk
-
-
-# Some functions for analysis
-def kendall_pval(x,y):
-        return kendalltau(x,y)[1]
-    
-def pearsonr_pval(x,y):
-        return pearsonr(x,y)[1]
-    
-def spearmanr_pval(x,y):
-        return spearmanr(x,y)[1]
-
-def display_correlation(df):
-    r = df.corr(method="spearman")
-    plt.figure(figsize=(10,6))
-    heatmap = sns.heatmap(df.corr(method='spearman'), vmin=-1, 
-                      vmax=1, annot=True)
-    plt.title("Spearman Correlation")
-    return(r)
-
-def display_corr_pairs(df,color="cyan"):
-    s = set_title = np.vectorize(lambda ax,r,rho: ax.title.set_text("r = " + 
-                                        "{:.2f}".format(r) + 
-                                        '\n $\\rho$ = ' + 
-                                        "{:.2f}".format(rho)) if ax!=None else None
-                            )      
-
-    rho = display_correlation(df)
-    r = df.corr(method="pearson")
-    g = sns.PairGrid(df,corner=True)
-    g.map_diag(plt.hist,color="yellow")
-    g.map_lower(sns.scatterplot,color="magenta")
-    set_title(g.axes,r,rho)
-    plt.subplots_adjust(hspace = 0.6)
-    plt.show()  
+import Custom_functions
 
 # Data paths
 datapath = '../Data/Input_files/'
@@ -162,30 +106,25 @@ swdom = '#469B76'
 # Wanting to look at 1) Drawdown 2) Anomaly's 3) Recovery
 #   Decided from the drought indices analysis that the cutoff value is -3 for severe droughts
 
-# First read in the drought indice
-drought_indices = pd.read_csv('../MergedData/Output_files/Yearly_DroughtIndices.csv')
-drought_indices = drought_indices.set_index('In_year')
-drought_indices
-
 # %% Drought dictionary
-dd = {1:[1989,1990]
+DROUGHT_YEARS = {1:[1989,1990]
         ,2:[1996]
         ,3:[2002,2003]
         ,4:[2006,2007]
         ,5:[2012,2013,2014]
         ,6:[2018]}
 
-print(dd)
+print(DROUGHT_YEARS)
 
 #%% Pre-drought
-pre_d = {1:[1988]
+PREDROUGHT_YEARS = {1:[1988]
         ,2:[1995]
         ,3:[2001]
         ,4:[2005]
         ,5:[2011]
         ,6:[2017]}
 
-print(pre_d)
+print(PREDROUGHT_YEARS)
 
 #%% Print the average PDSI and PHDI values
 
@@ -196,7 +135,7 @@ column_list = ds.columns.tolist()
 ds['Status'] = 'Normal-Wet'
 # wlanalysis_period
 
-for x,y in dd.items():
+for x,y in DROUGHT_YEARS.items():
         ds.loc[y, 'Status'] = 'Drought '+str(x)
 
 
@@ -288,7 +227,7 @@ column_list = ds.columns.tolist()
 ds['Status'] = 'Normal-Wet'
 # wlanalysis_period
 
-for x,y in dd.items():
+for x,y in DROUGHT_YEARS.items():
         ds.loc[y, 'Status'] = 'Drought '+str(x)
 
 
@@ -301,7 +240,7 @@ column_list = ds.columns.tolist()
 
 ds['Status'] = 'Normal-Wet'
 
-for x,y in pre_d.items():
+for x,y in PREDROUGHT_YEARS.items():
         ds.loc[y, 'pre_d'] = 'Drought '+str(x)
 
 predrought = ds.groupby(['pre_d']).mean()
@@ -450,7 +389,7 @@ ds = dtw_anomalys.copy()
 ds['Status'] = 'Normal-Wet'
 # wlanalysis_period
 
-for x,y in dd.items():
+for x,y in DROUGHT_YEARS.items():
         ds.loc[y, 'Status'] = 'Drought '+str(x)
 
 ds
@@ -515,10 +454,10 @@ ds = wlanalysis_period.copy()
 columns = ds.columns
 column_list = ds.columns.tolist()
 ds['Status'] = 'Normal-Wet'
-for x,y in dd.items():
+for x,y in DROUGHT_YEARS.items():
         ds.loc[y, 'Status'] = 'Drought '+str(x)
 
-for x,y in pre_d.items():
+for x,y in PREDROUGHT_YEARS.items():
         ds.loc[y, 'pre_d'] = 'Drought '+str(x)
 # ds
 
@@ -594,10 +533,10 @@ ds = wlanalysis_period.copy()
 columns = ds.columns
 column_list = ds.columns.tolist()
 ds['Status'] = 'Normal-Wet'
-for x,y in dd.items():
+for x,y in DROUGHT_YEARS.items():
         ds.loc[y, 'Status'] = 'Drought '+str(x)
 
-for x,y in pre_d.items():
+for x,y in PREDROUGHT_YEARS.items():
         ds.loc[y, 'pre_d'] = 'Drought '+str(x)
 ds
 
