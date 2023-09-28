@@ -1,0 +1,11 @@
+name: azdroughtanalysis
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.8
+  - pandas
+  - geopandas
+  - seaborn
+  - ipykernel
+prefix: /Users/danielletadych/opt/miniconda3/envs/azdroughtanalysis

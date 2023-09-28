@@ -1,11 +1,11 @@
 # ------ Drought Indice Analysis --------
 # Written by Danielle Tadych, May 2022
+#    modified 9/26/2023
 
-# The purpose of this code is to pick out drought periods 
-# based on PDSI
+# The purpose of this code is to pick out drought periods.
 
-# The dataset needed is nClimDiv text file from the GHCN.  This data in particular is
-# averaged for the state of Arizona
+# The dataset needed is nClimDiv text file from the Global Historical Climatology Network (GHCN).
+# This data in particular is averaged for the state of Arizona.
 
 
 # %% Load the packages
@@ -29,9 +29,9 @@ import geopandas as gp
 import scipy.stats as sp
 
 # Assign Data paths
-datapath = '../MergedData'
-outputpath = '../MergedData/Output_files/'
-shapepath = '../MergedData/Shapefiles/Final_Georegions/'
+datapath = '../Data/Input_files/'
+outputpath = '../Data/Output_files/'
+shapepath = '../Data/Shapefiles/'
 
 # %% Creating colors
 c_1 = '#8d5a99' # Reservation
@@ -51,15 +51,8 @@ wet_color = '#b8d3f2'
 # %% Read in the file
 filename = 'nClimDiv_AZ_GHCN.txt'
 filepath = os.path.join(datapath, filename)
-print(filepath)
-
-#%%
-nclimdata = pd.read_csv(filepath 
-                        #   ,parse_dates=['INSTALLED']
-                          )
+nclimdata = pd.read_csv(filepath)
 nclimdata
-# %%
-nclimdata.describe()
 # %%
 nclimdata['date'] = pd.to_datetime(nclimdata['YearMonth'], format='%Y%m', errors='coerce').dropna()
 nclimdata
@@ -400,7 +393,7 @@ analysis_period = yearly_pdsi[yearly_pdsi.index>=1975]
 # del analysis_period['wet']
 # del analysis_period['dry']
 
-analysis_period.to_csv('../MergedData/Output_files/Yearly_DroughtIndices.csv')
+analysis_period.to_csv('../Data/Input_files/Yearly_DroughtIndices.csv')
 
 # %%
 analysis_period
@@ -422,7 +415,7 @@ df.loc[df['PDSI'] >= value, 'PDSI_status'] = 'Wet'
 
 df
 
-analysis_period.to_csv('../MergedData/Output_files/YearlyDrought_'+str(value)+'.csv')
+analysis_period.to_csv('../Data/Input_files/YearlyDrought_'+str(value)+'.csv')
 
 # %%
 analysis_period[['PHDI_status','PDSI_status']].describe()
