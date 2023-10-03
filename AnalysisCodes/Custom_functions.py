@@ -17,6 +17,13 @@ import pymannkendall as mk
 
 outputpath_local = '../Data/Output_files/'
 
+cap = '#C6652B'
+# noCAP = '#EDE461' # This is one from the map
+noCAP = '#CCC339' # This color but darker for lines
+GWdom = '#3B76AF'
+mixed = '#6EB2E4'
+swdom = '#469B76'
+
 # Some functions for analysis
 def kendall_pval(x,y):
         return kendalltau(x,y)[1]
@@ -65,8 +72,8 @@ def regulation_scatterplot(ds,ds2,name):
                         , colors
                         , betterlabels
                         ):
-                x = ds2[i]
-                y = ds[i]
+                x = ds[i]
+                y = ds2[i]
                 ax.scatter(x,y
                         , label=k
                         , color=j
@@ -128,7 +135,7 @@ def regulation_scatterplot(ds,ds2,name):
         stats.index = betterlabels
         stats1 = stats.transpose()
         print(stats1)
-        stats1.to_csv(outputpath_local+'/'+Name+'_corrstats.csv')
+        stats1.to_csv(outputpath_local+'/'+name+'_corrstats.csv')
 
 def sw_scatterplot(ds,ds2,name):
         columns = ds.columns
@@ -136,7 +143,7 @@ def sw_scatterplot(ds,ds2,name):
         betterlabels = ['Receives CAP (Regulated)','GW Dominated (Regulated)','Mixed Source','GW Dominated','Surface Water Dominated'] 
         # betterlabels = ['Regulated','Unregulated'] 
         # colors=[cap, GWdom]
-        colors=[cap,noCAP, mixed,GWdom,swdom]
+        colors=[cap,noCAP,mixed,GWdom,swdom]
 
         fig, ax = plt.subplots(figsize = (7,5))
         for i,j,k in zip(column_list
