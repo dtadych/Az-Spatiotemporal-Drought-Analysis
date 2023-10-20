@@ -67,14 +67,14 @@ print(wl_data2.info())
 
 #%%
 # Output wl_data2 to a csv in the specified directory
-wl_data2.to_csv(outputpath+'wl_data2.csv')
+wl_data2.to_csv(outputpath+'wl_data3.csv')
 
 # %% 
 # ----- Import the Data and Shapefiles with Geometries -----
 # Read in Wells 55 Data
 # This is a file with water levels from ADWR which has been joined with another ADWR file with variables
 filename = 'Well_Registry_05032023.csv'
-filepath = os.path.join(datapath+'Wells55', filename)
+filepath = os.path.join(datapath, filename)
 print(filepath)
 
 wells55 = pd.read_csv(filepath)
@@ -83,18 +83,19 @@ print(wells55.info())
 
 # Read in GWSI collated water level data
 filename = 'wl_data2.csv'
-filepath = os.path.join(outputpath, filename)
+filepath = os.path.join(datapath, filename)
 print(filepath)
 
 wl_data2 = pd.read_csv(filepath)
 pd.options.display.float_format = '{:.2f}'.format
 print(wl_data2.info())
 
-#%% ---- Making dataframes with Date as the index ---
+# %% ---- Making dataframes with Date as the index ---
 # Make dataframes with Columns for GWSI and Wells55, respectively
 # Following this method: https://stackoverflow.com/questions/32215024/merging-time-series-data-by-timestamp-using-numpy-pandas
 # Confirmed through the variables list that "depth" in wldata2 and "WATER_LEVE" are both depth to water below land surface in feet
-
+wl_data2.info()
+# %%
 # gwsi_wl = wl_data2[["date","wellid","SITE_WELL_REG_ID","depth"]].copy()
 # gwsi_wl.info()
 
@@ -116,7 +117,6 @@ wells55_wl.rename(columns = {'INSTALLED':'date','WATER_LEVEL':'depth'}, inplace=
 # gwsi_wl['Combo_ID'] = gwsi_wl.SITE_WELL_REG_ID.combine_first(gwsi_wl.wellid)
 # gwsi_wl.info()
 
-
 # gwsi_wl.rename(columns={'Combo_ID':'REGISTRY_ID'}, inplace=True)
 gwsi_wl.rename(columns={'SITE_WELL_REG_ID':'REGISTRY_ID'}, inplace=True)
 gwsi_wl.info()
@@ -124,6 +124,7 @@ gwsi_wl.info()
 # %% Need to make sure the columns are the same Dtype
 gwsi_wl.REGISTRY_ID = gwsi_wl.REGISTRY_ID.astype('int64')
 gwsi_wl.info()
+
 # %%
 wells55_wl['date'] = pd.to_datetime(wells55_wl.date)
 wells55_wl.info()
@@ -132,7 +133,11 @@ wells55_wl['date'] = wells55_wl['date'].dt.tz_localize(None)
 wells55_wl.info()
 
 # %%
-gwsi_wl.date = pd.to_datetime(gwsi_wl.date)
+gwsi_wl.date = gwsi_wl.date.astype('str')
+gwsi_wl.info()
+
+# %%
+gwsi_wl.date = pd.to_datetime(gwsi_wl.date, format='mixed')
 gwsi_wl.info()
 #%%
 #combo = gwsi_wl.join(wells55_wl, how='outer')
@@ -143,8 +148,8 @@ combo = wells55_wl.merge(gwsi_wl, suffixes=['_wells55','_gwsi'], how="outer"
                                           )
 combo.info()
 
-# # %% This block of code takes a really long time to run so I would suggest skipping
-WL_TS_DB = pd.pivot_table(combo, index=["REGISTRY_ID"], columns="date", values="depth")
+# %% This block of code takes a really long time to run so I would suggest skipping
+# WL_TS_DB = pd.pivot_table(combo, index=["REGISTRY_ID"], columns="date", values="depth")
 # WL_TS_DB.head()
 # # Export data into a csv
 # WL_TS_DB.to_csv(outputpath + 'Wells55_GWSI_WLTS_DB.csv')
@@ -156,6 +161,10 @@ combo.head()
 
 # %%
 WL_TS_DB_year = pd.pivot_table(combo, index=["REGISTRY_ID"], columns=["year"], values=["depth"], dropna=False, aggfunc=np.mean)
+# %%
+WL_TS_DB_year_max = pd.pivot_table(combo, index=["REGISTRY_ID"], columns=["year"], values=["depth"], dropna=False, aggfunc=np.max)
+WL_TS_DB_year_min = pd.pivot_table(combo, index=["REGISTRY_ID"], columns=["year"], values=["depth"], dropna=False, aggfunc=np.min)
+WL_TS_DB_year_var = WL_TS_DB_year_max - WL_TS_DB_year_min
 # %% Testing 1980 versus 2020 to see if there's a difference
 print(WL_TS_DB_year.iloc[:,115])
 # %%
@@ -215,6 +224,9 @@ WL_TS_DB_month.head()
 # %%
 # Export both yearly summary data and monthly into csv
 WL_TS_DB_year.to_csv(outputpath + 'Wells55_GWSI_WLTS_DB_annual.csv')
+WL_TS_DB_year_max.to_csv(outputpath + 'Wells55_GWSI_WLTS_DB_annual_max.csv')
+WL_TS_DB_year_min.to_csv(outputpath + 'Wells55_GWSI_WLTS_DB_annual_min.csv')
+WL_TS_DB_year_var.to_csv(outputpath + 'Wells55_GWSI_WLTS_DB_annual_var.csv')
 # %%
 WL_TS_DB_month.to_csv(outputpath + 'Wells55_GWSI_WLTS_DB_monthly.csv')
 # %%
