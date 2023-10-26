@@ -149,13 +149,12 @@ print(filepath)
 annual_db_var = pd.read_csv(filepath, header=1, index_col=0)
 
 # %%
+annual_db.index = annual_db.index.astype('int64')
 annual_db_max.index = annual_db_max.index.astype('int64')
 annual_db_min.index = annual_db_min.index.astype('int64')
 annual_db_var.index = annual_db_var.index.astype('int64')
 annual_db_var.info()
 
-# %%
-annual_db.index = annual_db.index.astype('int64')
 
 # %%
 annual_db2 = annual_db.reset_index(inplace=True)

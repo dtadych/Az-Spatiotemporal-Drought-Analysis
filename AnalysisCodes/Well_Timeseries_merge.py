@@ -82,7 +82,8 @@ pd.options.display.float_format = '{:.2f}'.format
 print(wells55.info())
 
 # Read in GWSI collated water level data
-filename = 'wl_data2.csv'
+filename = 'wl_data3.csv'
+# filename = 'wl_data2.csv'
 filepath = os.path.join(datapath, filename)
 print(filepath)
 
@@ -90,17 +91,16 @@ wl_data2 = pd.read_csv(filepath)
 pd.options.display.float_format = '{:.2f}'.format
 print(wl_data2.info())
 
-# %% ---- Making dataframes with Date as the index ---
+#%% ---- Making dataframes with Date as the index ---
 # Make dataframes with Columns for GWSI and Wells55, respectively
 # Following this method: https://stackoverflow.com/questions/32215024/merging-time-series-data-by-timestamp-using-numpy-pandas
 # Confirmed through the variables list that "depth" in wldata2 and "WATER_LEVE" are both depth to water below land surface in feet
-wl_data2.info()
-# %%
-# gwsi_wl = wl_data2[["date","wellid","SITE_WELL_REG_ID","depth"]].copy()
-# gwsi_wl.info()
 
-gwsi_wl = wl_data2[["date","SITE_WELL_REG_ID","depth"]].copy()
+gwsi_wl = wl_data2[["date","wellid","SITE_WELL_REG_ID","depth"]].copy()
 gwsi_wl.info()
+
+# gwsi_wl = wl_data2[["date","SITE_WELL_REG_ID","depth"]].copy()
+# gwsi_wl.info()
 
 wells55_wl = wells55[["INSTALLED", "REGISTRY_ID", "WATER_LEVEL"]].copy()
 wells55_wl.info()
@@ -114,17 +114,17 @@ wells55_wl.head()
 # %%
 wells55_wl.rename(columns = {'INSTALLED':'date','WATER_LEVEL':'depth'}, inplace=True)
 # %% Need to create a combo ID column
-# gwsi_wl['Combo_ID'] = gwsi_wl.SITE_WELL_REG_ID.combine_first(gwsi_wl.wellid)
-# gwsi_wl.info()
+gwsi_wl['Combo_ID'] = gwsi_wl.SITE_WELL_REG_ID.combine_first(gwsi_wl.wellid)
+gwsi_wl.info()
 
-# gwsi_wl.rename(columns={'Combo_ID':'REGISTRY_ID'}, inplace=True)
-gwsi_wl.rename(columns={'SITE_WELL_REG_ID':'REGISTRY_ID'}, inplace=True)
+# %%
+gwsi_wl.rename(columns={'Combo_ID':'REGISTRY_ID'}, inplace=True)
+# gwsi_wl.rename(columns={'SITE_WELL_REG_ID':'REGISTRY_ID'}, inplace=True)
 gwsi_wl.info()
 
 # %% Need to make sure the columns are the same Dtype
 gwsi_wl.REGISTRY_ID = gwsi_wl.REGISTRY_ID.astype('int64')
 gwsi_wl.info()
-
 # %%
 wells55_wl['date'] = pd.to_datetime(wells55_wl.date)
 wells55_wl.info()
@@ -133,11 +133,7 @@ wells55_wl['date'] = wells55_wl['date'].dt.tz_localize(None)
 wells55_wl.info()
 
 # %%
-gwsi_wl.date = gwsi_wl.date.astype('str')
-gwsi_wl.info()
-
-# %%
-gwsi_wl.date = pd.to_datetime(gwsi_wl.date, format='mixed')
+gwsi_wl.date = pd.to_datetime(gwsi_wl.date)
 gwsi_wl.info()
 #%%
 #combo = gwsi_wl.join(wells55_wl, how='outer')
@@ -161,10 +157,8 @@ combo.head()
 
 # %%
 WL_TS_DB_year = pd.pivot_table(combo, index=["REGISTRY_ID"], columns=["year"], values=["depth"], dropna=False, aggfunc=np.mean)
-# %%
-WL_TS_DB_year_max = pd.pivot_table(combo, index=["REGISTRY_ID"], columns=["year"], values=["depth"], dropna=False, aggfunc=np.max)
-WL_TS_DB_year_min = pd.pivot_table(combo, index=["REGISTRY_ID"], columns=["year"], values=["depth"], dropna=False, aggfunc=np.min)
-WL_TS_DB_year_var = WL_TS_DB_year_max - WL_TS_DB_year_min
+LEN_TS_DB_year = pd.pivot_table(combo, index=["REGISTRY_ID"], columns=["year"], values=["depth"], dropna=False, aggfunc=len)
+max_TS_DB_year = pd.pivot_table(combo, index=["REGISTRY_ID"], columns=["year"], values=["depth"], dropna=False, aggfunc=np.max)
 # %% Testing 1980 versus 2020 to see if there's a difference
 print(WL_TS_DB_year.iloc[:,115])
 # %%
@@ -186,7 +180,7 @@ test = WL_TS_DB_year.mean()
 test.plot()
 
 # %% 
-stats = WL_TS_DB_year.describe()
+# stats = WL_TS_DB_year.describe()
 stats = stats.transpose()
 stats2 = stats[['mean','25%','50%','75%']]
 stats2[119:157].plot()
@@ -195,19 +189,13 @@ stats2[119:157].plot()
 narrowedstats = stats[110:158]
 narrowedstats
 # %%
-narrowedstats.to_csv(outputpath+"state_average_WL.csv")
+narrowedstats.to_csv(outputpath+"state_average_WL_updated.csv")
 # %%
 max = stats['max']
 max[119:157].plot()
 # %% Exporting data
-WL_TS_DB_1980.to_csv(outputpath + 'comboDB_WL_1980.csv')
-WL_TS_DB_2020.to_csv(outputpath + 'comboDB_WL_2020.csv')
-# %%  Seeing if things work
-fig, ax = plt.subplots()
-ax.plot(WL_TS_DB_year.iloc[:,155])
-ax.set(title='WL in 1980', xlabel='Registry ID', ylabel='Water Level (feet)')
-ax.grid()
-plt.show
+# WL_TS_DB_1980.to_csv(outputpath + 'comboDB_WL_1980.csv')
+# WL_TS_DB_2020.to_csv(outputpath + 'comboDB_WL_2020.csv')
 # %%
 WL_TS_DB_year.info()
 # %%
@@ -223,10 +211,44 @@ WL_TS_DB_month.index.name = None
 WL_TS_DB_month.head()
 # %%
 # Export both yearly summary data and monthly into csv
-WL_TS_DB_year.to_csv(outputpath + 'Wells55_GWSI_WLTS_DB_annual.csv')
-WL_TS_DB_year_max.to_csv(outputpath + 'Wells55_GWSI_WLTS_DB_annual_max.csv')
-WL_TS_DB_year_min.to_csv(outputpath + 'Wells55_GWSI_WLTS_DB_annual_min.csv')
-WL_TS_DB_year_var.to_csv(outputpath + 'Wells55_GWSI_WLTS_DB_annual_var.csv')
+# WL_TS_DB_year.to_csv(outputpath + 'Wells55_GWSI_WLTS_DB_annual.csv')
+# WL_TS_DB_year.to_csv(outputpath + 'Wells55_GWSI_WLTS_DB_annual_comboID.csv')
+WL_TS_DB_year.to_csv(outputpath + 'Wells55_GWSI_WLTS_DB_annual_updated.csv')
+# %%
+# LEN_TS_DB_year.to_csv(outputpath + 'Wells55_GWSI_LEN_WLTS_DB_annual.csv')
+LEN_TS_DB_year.to_csv(outputpath + 'Wells55_GWSI_LEN_WLTS_DB_annual_comboID.csv')
+# LEN_TS_DB_year.to_csv(outputpath + 'Wells55_GWSI_LEN_WLTS_DB_annual_updated.csv')
+
+# %%
+# max_TS_DB_year.to_csv(outputpath + 'Wells55_GWSI_MAX_WLTS_DB_annual.csv')
+# max_TS_DB_year.to_csv(outputpath + 'Wells55_GWSI_MAX_WLTS_DB_annual_comboID.csv')
+max_TS_DB_year.to_csv(outputpath + 'Wells55_GWSI_MAX_WLTS_DB_annual_updated.csv')
+
+# %% Creating totals for mapping
+min_yr = 2000.0
+mx_yr = 2022.0
+measurement_buffer = 0
+threshold = 23
+# ds = WL_TS_DB_year.transpose()
+ds = LEN_TS_DB_year.loc[:, ('depth', min_yr):('depth', mx_yr)]
+# ds = ds.dropna(thresh=threshold) #sets a threshold
+ds = ds.dropna(subset=ds.columns[measurement_buffer:-measurement_buffer])
+# ds.info()
+columndf = ds.transpose()
+print("Number of wells", len(columndf.columns))
+# %%
+total_WL = ds.sum(axis=1)
+total_WL = pd.DataFrame(total_WL)
+total_WL = total_WL.reset_index()
+total_WL = total_WL.rename(columns={"REGISTRY_ID": "Combo_ID",
+                   0: "LEN"}, errors="raise")
+total_WL = total_WL.set_index('Combo_ID')
+# total_WL = total_WL['LEN'].astype(int, errors = 'raise')
+total_WL
+# total_WL.to_csv(outputpath+'numberWL_perwell_'+str(min_yr)+'-'+str(mx_yr)+'_comboID.csv')
+total_WL.to_csv(outputpath+'numberWL_perwell_'+str(min_yr)+'-'+str(mx_yr)+'_updated'+'_bf'+str(measurement_buffer)+'.csv')
+# total_WL.to_csv(outputpath+'numberWL_perwell_'+str(min_yr)+'-'+str(mx_yr)+'_updated'+'_thresh'+str(threshold)+'.csv')
+
 # %%
 WL_TS_DB_month.to_csv(outputpath + 'Wells55_GWSI_WLTS_DB_monthly.csv')
 # %%
