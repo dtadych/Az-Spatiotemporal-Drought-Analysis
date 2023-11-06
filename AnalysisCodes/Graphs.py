@@ -47,7 +47,7 @@ shapepath = shapepath_local
 inputpath = inputpath_local
 # %% Read in the data
 
-# %% Importing Water Level Values
+# Importing Water Level Values
 # For statewide
 filename_ts = 'Wells55_GWSI_WLTS_DB_annual.csv'
 filepath = os.path.join(inputpath, filename_ts)
@@ -56,22 +56,18 @@ annual_db = pd.read_csv(filepath, header=1, index_col=0)
 annual_db.head()
 
 # For regulation
-filepath = inputpath+'/Waterlevels_Regulation.csv'
-# filepath = '../Data/Output_files/Waterlevels_Regulation.csv'
+filepath = outputpath+'/Waterlevels_Regulation_updated.csv'
+# filepath = outputpath+'/Waterlevels_Regulation_updated_MAX.csv'
+# filepath = outputpath+'/Waterlevels_Regulation_updated_MIN.csv'
 cat_wl2_reg = pd.read_csv(filepath, index_col=0)
 cat_wl2_reg.head()
 
 # For Access to SW
-filepath = inputpath+'/Waterlevels_AccesstoSW.csv'
-# filepath = '../Data/Output_files/Waterlevels_AccesstoSW_GWlumped.csv'
+filepath = outputpath+'/Waterlevels_AccesstoSW_updated.csv'
+# filepath = outputpath+'/Waterlevels_AccesstoSW_updated_MAX.csv'
+# filepath = outputpath+'/Waterlevels_AccesstoSW_updated_MIN.csv'
 cat_wl2_SW = pd.read_csv(filepath, index_col=0)
 cat_wl2_SW.head()
-
-# For georegion number
-filepath = inputpath+'Waterlevels_georegions.csv'
-# filepath = '../Data/Output_files/Waterlevels_georegions.csv'
-cat_wl2_georeg = pd.read_csv(filepath, index_col=0)
-# cat_wl2_georeg.head()
 
 # %% Importing GRACE analyses
 filepath = filepath = inputpath+'grace_stateavg_yearly.csv'
@@ -82,15 +78,6 @@ grace_yearly = grace_yearly[:-1]
 # Reading in the shapefile - note, figure 2 is created through QGIS
 filename_georeg = 'georeg_reproject_fixed.shp'
 filepath = os.path.join(shapepath, filename_georeg)
-# %% creating weights for the GW dominated categories
-georeg = gp.read_file(filepath)
-georeg.plot(cmap='viridis')
-georeg['area'] = georeg.geometry.area/10**6
-georeg_wcweights = georeg.groupby(['Water_CAT']).sum()
-nocap_area = georeg_wcweights.loc['No_CAP','area']
-gwdom_area = georeg_wcweights.loc['GW','area']
-nocap_wt = nocap_area/(nocap_area+gwdom_area)
-gwdom_wt = gwdom_area/(nocap_area+gwdom_area)
 
 # %% Creating colors
 # Matching map
@@ -108,8 +95,11 @@ wet_color = '#b8d3f2'
 # %% Figure 7a
 # For Depth to Water by regulation
 ds = cat_wl2_reg
-min_yr = 1975
-mx_yr = 2020
+min_yr = 2000
+mx_yr = 2022
+Name = "mean_Regulation"
+
+# del cat_wl2_reg['Res']
 betterlabels = ['Regulated','Unregulated'] 
 
 f = ds[(ds.index >= min_yr) & (ds.index <= mx_yr)]
@@ -211,15 +201,19 @@ ax2.set_ylim([15, -15])
 ax2.set_ylabel(u'Δ LWE (cm)',fontsize=fsize)
 ax2.legend(loc='lower right')
 
-plt.savefig(figurepath+'Figure7a', bbox_inches = 'tight')
+plt.savefig(figurepath+Name, bbox_inches = 'tight')
 
 # %% Figure 7c
 # For Depth to Water by SW Access
 ds = cat_wl2_SW
-min_yr = 1975
-mx_yr = 2020
+min_yr = 2000
+mx_yr = 2022
+Name = "Mean_A2SW"
+
+# del cat_wl2_SW['Res']
+
 betterlabels = ['Recieves CAP'
-                # ,'GW Dominated (Regulated)'
+                ,'GW Dominated (Regulated)'
                 ,'Surface Water Dominated'
                 ,'GW Dominated'
                 ,'Mixed Source'] 
@@ -306,7 +300,7 @@ ax.plot(xf1, yf3,"-.",color=mixed, lw=1)
 ax.plot(xf1, yf4,"-.",color='#CCC339', lw=1)
 ax.plot(xf1, yf5,"-.",color=swdom, lw=1)
 
-min_y = 75
+min_y = 0
 max_y = 300
 fsize = 12
 
@@ -326,7 +320,7 @@ ax.set_ylabel('Depth to Water (ft)',fontsize=fsize)
 ax.minorticks_on()
 fig.set_dpi(600.0)
 # ax.set_title('c)',fontsize = fsize,loc='left',pad=15)
-ax.legend()
+ax.legend(loc = [1.15,0.5])
 
 #Putting Grace on a secondary axis
 ax2 = ax.twinx()
@@ -335,7 +329,7 @@ ax2.set_ylim([15, -15])
 ax2.set_ylabel(u'Δ LWE (cm)',fontsize=fsize)
 ax2.legend(loc='lower right')
 
-plt.savefig(figurepath+'Figure7c', bbox_inches = 'tight')
+plt.savefig(figurepath+Name, bbox_inches = 'tight')
 
 # %%
 # Graph state average DTW and GRACE
@@ -353,8 +347,8 @@ adb_meandf = f
 
 
 ds = adb_meandf
-min_yr = 1975
-mx_yr = 2020
+min_yr = 2000
+mx_yr = 2022
 # betterlabels = ['Recieves CAP (Regulated)'
 #                 ,'GW Dominated (Regulated)'
 #                 ,'Surface Water Dominated'
