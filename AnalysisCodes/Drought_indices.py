@@ -53,6 +53,7 @@ filename = 'nClimDiv_AZ_GHCN.txt'
 filepath = os.path.join(datapath, filename)
 nclimdata = pd.read_csv(filepath)
 nclimdata
+
 # %%
 nclimdata['date'] = pd.to_datetime(nclimdata['YearMonth'], format='%Y%m', errors='coerce').dropna()
 nclimdata
@@ -422,7 +423,151 @@ analysis_period[['PHDI_status','PDSI_status']].describe()
 # %%
 print('Drought info: ', analysis_period[analysis_period['PDSI_status']=='Drought'].describe())
 
+# %% Reading in new PDSI Data
+filename = 'nClimDiv_AZ_GHCN.txt'
+filepath = os.path.join(datapath, filename)
+nclimdata = pd.read_csv(filepath)
+nclimdata
+
+# %% From ChatGPT
+# Replace 'your_folder_path' with the path to your folder containing CSV files
+folder_path = datapath+'/PDSI'
+
+# Get a list of all files in the folder
+files = os.listdir(folder_path)
+
 # %%
-df
+# Filter out only CSV files (assuming they have a .csv extension)
+csv_files = [file for file in files if file.endswith('.csv')]
+
+# Create an empty list to store DataFrames
+dataframes = []
+
+# Loop through each CSV file and read it into a pandas DataFrame
+for csv_file in csv_files:
+    # Construct the full path to the CSV file
+    csv_file_path = os.path.join(folder_path, csv_file)
+
+    # Read the CSV file into a pandas DataFrame
+    df = pd.read_csv(csv_file_path)
+
+        # Convert the first column to datetime format if it's in 'yyyymmdd' format
+    df.index = pd.to_datetime(df.index, format='%Y%m%d')
+
+    df['Year'] = df.index.year
+    print(df.columns[0])
+#     df = df.rename(columns={df.columns[0]: 'PDSI'})
+    # Append the DataFrame to the list
+    dataframes.append(df)
+# See the first one
+dataframes[0]
 # %%
-print()
+# Group by the date column and calculate the average for each group
+combined_df = pd.concat(dataframes
+                        # , ignore_index=True
+                        )
+combined_df
+
+# %%
+combined_df.plot()
+
+# %%
+# average_df = pd.pivot_table(combined_df, index=["Year"], values=['PDSI'], dropna=False, aggfunc=np.mean)
+
+average_df = combined_df.groupby('Year').mean()
+average_df
+# %%
+average_df.plot()
+# %%
+yearly_pdsi
+
+# %%
+summarystats = average_df.transpose()
+summarystats = summarystats.describe()
+summarystats = summarystats.transpose()
+summarystats
+# %%
+value = 3
+yearly_pdsi['wet'] = value
+yearly_pdsi['dry'] = -value
+yearly_pdsi
+#  PDSI
+ds = yearly_pdsi
+minyear=2000
+maxyear=2022
+# name = "Average PDSI and PHDI for AZ from " + str(minyear) + " to " + str(maxyear)
+name = "Comparing prior PDSI Values to New Values"
+min_y = -6
+max_y = 6
+fsize = 12
+
+fig, ax = plt.subplots(figsize = (9,5))
+
+a = 1988.5
+b = 1990.5
+c = 1995.5
+d = 1996.5
+e = 2020.5
+f = 2021.5
+g = 2001.5
+h = 2003.5
+i = 2005.5
+j = 2007.5
+k = 2011.5
+l = 2014.5
+m = 2017.5
+n = 2018.5
+plt.axvspan(a, b, color=drought_color, alpha=0.5, lw=0, label="Severe Drought")
+plt.axvspan(c, d, color=drought_color, alpha=0.5, lw=0)
+plt.axvspan(e, f, color=drought_color, alpha=0.5, lw=0)
+plt.axvspan(g, h, color=drought_color, alpha=0.5, lw=0)
+plt.axvspan(i, j, color=drought_color, alpha=0.5, lw=0)
+plt.axvspan(k, l, color=drought_color, alpha=0.5, lw=0)
+plt.axvspan(m, n, color=drought_color, alpha=0.5, lw=0)
+
+#ax.plot(ds[1.0], label='Reservation', color=c_1)
+# ax.plot(ds['CAP'], label='CAP', color=c_2)
+# ax.plot(ds['PHDI'], label='PHDI'
+#         # , color='blue'
+#         , lw=3
+#         ) 
+ 
+# ax.plot(average_df['PDSI']
+#         # ,'-.'
+#         # , label='New PDSI'
+#         # , color='default'
+#         , lw=2
+#         )
+ax.plot(summarystats['mean']
+        ,label='New PDSI Mean')
+ax.fill_between(summarystats.index
+                ,summarystats['max']
+                ,summarystats['min']
+                ,label='New PDSI Range'
+                ,alpha=0.3)
+ax.plot(ds['PDSI']
+        # ,'-.'
+        , label='Old PDSI'
+        # , color='default'
+        , lw=2
+        )
+
+# ax.plot(ds['wet'],label='wet',color='black',zorder = 5)
+ax.plot(ds['dry'],'-.',label='Cutoff Value',color='black', zorder=5)
+
+ax.set_xlim(minyear,maxyear)
+ax.set_ylim(min_y,max_y)
+ax.minorticks_on()
+ax.grid(visible=True,which='major')
+ax.grid(which='minor',color='#EEEEEE', lw=0.8)
+# ax.set_title(name, fontsize=14)
+ax.set_xlabel('Year', fontsize=fsize)
+ax.set_ylabel('Index Values',fontsize=fsize)
+ax.legend(loc = [1.04, 0.40], fontsize = fsize)
+fig.set_dpi(600.0)
+plt.savefig(outputpath+name+'cutoffval_'+str(value), bbox_inches = 'tight')
+
+# %%
+average_df.to_csv('../Data/Input_files/nclimdiv_PDSI_Azdivs.csv')
+summarystats.to_csv('../Data/Input_files/NewPDSI_manualavg_11272023.csv')
+# %%
