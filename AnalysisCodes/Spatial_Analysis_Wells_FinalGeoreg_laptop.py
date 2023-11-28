@@ -136,10 +136,10 @@ reg_list['Combo_ID'] = reg_list['Combo_ID'].astype(np.int64, errors = 'raise')
 
 #%%
 # Read in the annual time series database
-filename_ts = 'Wells55_GWSI_WLTS_DB_annual_updated_thresh15.csv'
+# filename_ts = 'Wells55_GWSI_WLTS_DB_annual_updated_thresh15.csv'
 # filename_ts = 'Wells55_GWSI_WLTS_DB_annual_updated.csv'
-# filename_ts = 'Wells55_GWSI_MAX_WLTS_DB_annual_updated.csv'
-# filename_ts = 'Wells55_GWSI_MIN_WLTS_DB_annual_updated.csv'
+# filename_ts = 'Wells55_GWSI_MAX_WLTS_DB_annual_updated_thresh15.csv'
+filename_ts = 'Wells55_GWSI_MIN_WLTS_DB_annual_updated_thresh15.csv'
 filepath = os.path.join(outputpath_local, filename_ts)
 # filepath = os.path.join(inputpath_local, filename_ts)
 print(filepath)
@@ -168,7 +168,7 @@ combo = combo.sort_values(by=['GEOREGI_NU'])
 combo
 
 # %% Exporting the combo table
-# combo.to_csv(outputpath_local+'Final_WaterLevels_adjusted_updated.csv')
+combo.to_csv(outputpath_local+'Final_WaterLevels_adjusted_MIN_updated_thresh15.csv')
 
 # %% Reading in so we don't have to redo the combining, comment as appropriate
 # filepath = outputpath_local+'Final_WaterLevels_adjusted.csv'
@@ -184,12 +184,12 @@ combo_new = combo_new.drop(['GEO_Region','Loc','Regulation','WELL_DEPTH','WELL_T
 combo_copy = combo.copy()
 combo_copy = combo_copy.drop(['GEO_Region','Loc','Water_CAT','WELL_DEPTH','WELL_TYPE_'],axis=1)
 combo_copy
-# %%
-# combo_new.loc[combo_new['Water_CAT']=='No_CAP'] = 'NoSurf'
-# combo_new.loc[combo_new['Water_CAT']=='GW'] = 'NoSurf'
-# combo_new.loc[combo_new['Water_CAT']=='Mix'] = 'NoSurf'
-combo_new.loc[combo_new['Water_CAT']=='SW', 'Water_CAT'] = 'SWapp'
-combo_new.loc[combo_new['Water_CAT']=='CAP', 'Water_CAT'] = 'SWapp'
+# %% This is to adjust categories as desired
+# combo_new.loc[combo_new['Water_CAT']=='No_CAP', 'Water_CAT'] = 'NoSurf'
+# combo_new.loc[combo_new['Water_CAT']=='GW', 'Water_CAT'] = 'NoSurf'
+# combo_new.loc[combo_new['Water_CAT']=='Mix', 'Water_CAT'] = 'NoSurf'
+# combo_new.loc[combo_new['Water_CAT']=='SW', 'Water_CAT'] = 'SWapp'
+# combo_new.loc[combo_new['Water_CAT']=='CAP', 'Water_CAT'] = 'SWapp'
 combo_new['Water_CAT'].unique()
 
 # %% Now for aggregating by category for the timeseries (Spatial Average)
@@ -228,14 +228,14 @@ f.info()
 cat_wl2_SW = f
 
 # %% Going to export all these as CSV's
-cat_wl2_reg.to_csv(outputpath_local+'Waterlevels_Regulation_updated_thresh15.csv')
-cat_wl2_SW.to_csv(outputpath_local+'Waterlevels_AccesstoSW_updated_thresh15.csv')
+# cat_wl2_reg.to_csv(outputpath_local+'Waterlevels_Regulation_updated_thresh15.csv')
+# cat_wl2_SW.to_csv(outputpath_local+'Waterlevels_AccesstoSW_updated_thresh15.csv')
 
-# cat_wl2_reg.to_csv(outputpath_local+'Waterlevels_Regulation_updated_MAX.csv')
-# cat_wl2_SW.to_csv(outputpath_local+'Waterlevels_AccesstoSW_updated_MAX.csv')
+# cat_wl2_reg.to_csv(outputpath_local+'Waterlevels_Regulation_updated_MAX_thresh15.csv')
+# cat_wl2_SW.to_csv(outputpath_local+'Waterlevels_AccesstoSW_updated_MAX_thresh15.csv')
 
-# cat_wl2_reg.to_csv(outputpath_local+'Waterlevels_Regulation_updated_MIN.csv')
-# cat_wl2_SW.to_csv(outputpath_local+'Waterlevels_AccesstoSW_updated_MIN.csv')
+cat_wl2_reg.to_csv(outputpath_local+'Waterlevels_Regulation_updated_MIN_thresh15.csv')
+cat_wl2_SW.to_csv(outputpath_local+'Waterlevels_AccesstoSW_updated_MIN_thresh15.csv')
 # %%  ==== Reading in the data we created above ====
 #          Default is to read from the web, change as appropriate
 # For regulation
