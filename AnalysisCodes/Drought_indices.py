@@ -503,6 +503,107 @@ fsize = 12
 
 fig, ax = plt.subplots(figsize = (9,5))
 
+# a = 1988.5
+# b = 1990.5
+# c = 1995.5
+# d = 1996.5
+# e = 2020.5
+# f = 2021.5
+# g = 2001.5
+# h = 2003.5
+# i = 2005.5
+# j = 2007.5
+# k = 2011.5
+# l = 2014.5
+# m = 2017.5
+# n = 2018.5
+# plt.axvspan(a, b, color=drought_color, alpha=0.5, lw=0, label="Severe Drought")
+# plt.axvspan(c, d, color=drought_color, alpha=0.5, lw=0)
+# plt.axvspan(e, f, color=drought_color, alpha=0.5, lw=0)
+# plt.axvspan(g, h, color=drought_color, alpha=0.5, lw=0)
+# plt.axvspan(i, j, color=drought_color, alpha=0.5, lw=0)
+# plt.axvspan(k, l, color=drought_color, alpha=0.5, lw=0)
+# plt.axvspan(m, n, color=drought_color, alpha=0.5, lw=0)
+
+#ax.plot(ds[1.0], label='Reservation', color=c_1)
+# ax.plot(ds['CAP'], label='CAP', color=c_2)
+# ax.plot(ds['PHDI'], label='PHDI'
+#         # , color='blue'
+#         , lw=3
+#         ) 
+ 
+# ax.plot(average_df['PDSI']
+#         # ,'-.'
+#         # , label='New PDSI'
+#         # , color='default'
+#         , lw=2
+#         )
+ax.plot(summarystats['mean']
+        ,label='New PDSI Mean')
+ax.fill_between(summarystats.index
+                ,summarystats['max']
+                ,summarystats['min']
+                ,label='New PDSI Range'
+                ,alpha=0.3)
+ax.plot(ds['PDSI']
+        # ,'-.'
+        , label='Old PDSI'
+        # , color='default'
+        , lw=2
+        )
+
+# ax.plot(ds['wet'],label='wet',color='black',zorder = 5)
+# ax.plot(ds['dry'],'-.',label='Cutoff Value',color='black', zorder=5)
+
+ax.set_xlim(minyear,maxyear)
+ax.set_ylim(min_y,max_y)
+ax.minorticks_on()
+ax.grid(visible=True,which='major')
+ax.grid(which='minor',color='#EEEEEE', lw=0.8)
+# ax.set_title(name, fontsize=14)
+ax.set_xlabel('Year', fontsize=fsize)
+ax.set_ylabel('Index Values',fontsize=fsize)
+ax.legend(loc = [1.04, 0.40], fontsize = fsize)
+fig.set_dpi(600.0)
+# plt.savefig(outputpath+name+'cutoffval_'+str(value), bbox_inches = 'tight')
+
+# %%
+average_df.to_csv('../Data/Input_files/nclimdiv_PDSI_Azdivs.csv')
+summarystats.to_csv('../Data/Input_files/NewPDSI_manualavg_11272023.csv')
+# %%  --- Actually updated files
+filename = 'NOAA_PDSI_Timesseries_11282023.csv'
+filepath = os.path.join(datapath, filename)
+pdsi = pd.read_csv(filepath, header=3)
+
+pdsi['Date'] = pd.to_datetime(pdsi['Date'], format='%Y%m', errors='coerce').dropna()
+pdsi['In_year'] = pdsi['Date'].dt.year
+pdsi
+
+
+# %%
+yearly_pdsi_new = pd.pivot_table(pdsi, index=["In_year"], values=["Value"], dropna=False, aggfunc=np.mean)
+yearly_pdsi_new
+yearly_pdsi_new = yearly_pdsi_new.rename(columns = {'Value':'PDSI'})
+
+
+# %%
+# %%
+value = 3
+yearly_pdsi['wet'] = value
+yearly_pdsi['dry'] = -value
+yearly_pdsi
+#  PDSI
+ds = yearly_pdsi
+minyear=2000
+maxyear=2022
+# name = "Average PDSI and PHDI for AZ from " + str(minyear) + " to " + str(maxyear)
+name = "Comparing prior PDSI Values to New Values"
+min_y = -6
+max_y = 6
+fsize = 12
+
+fig, ax = plt.subplots(figsize = (9,5))
+
 a = 1988.5
 b = 1990.5
 c = 1995.5
@@ -538,13 +639,13 @@ plt.axvspan(m, n, color=drought_color, alpha=0.5, lw=0)
 #         # , color='default'
 #         , lw=2
 #         )
-ax.plot(summarystats['mean']
+ax.plot(yearly_pdsi_new['PDSI']
         ,label='New PDSI Mean')
-ax.fill_between(summarystats.index
-                ,summarystats['max']
-                ,summarystats['min']
-                ,label='New PDSI Range'
-                ,alpha=0.3)
+# ax.fill_between(summarystats.index
+#                 ,summarystats['max']
+#                 ,summarystats['min']
+#                 ,label='New PDSI Range'
+#                 ,alpha=0.3)
 ax.plot(ds['PDSI']
         # ,'-.'
         , label='Old PDSI'
@@ -553,7 +654,7 @@ ax.plot(ds['PDSI']
         )
 
 # ax.plot(ds['wet'],label='wet',color='black',zorder = 5)
-ax.plot(ds['dry'],'-.',label='Cutoff Value',color='black', zorder=5)
+# ax.plot(ds['dry'],'-.',label='Cutoff Value',color='black', zorder=5)
 
 ax.set_xlim(minyear,maxyear)
 ax.set_ylim(min_y,max_y)
@@ -565,9 +666,13 @@ ax.set_xlabel('Year', fontsize=fsize)
 ax.set_ylabel('Index Values',fontsize=fsize)
 ax.legend(loc = [1.04, 0.40], fontsize = fsize)
 fig.set_dpi(600.0)
-plt.savefig(outputpath+name+'cutoffval_'+str(value), bbox_inches = 'tight')
+# plt.savefig(outputpath+name+'cutoffval_'+str(value), bbox_inches = 'tight')
 
 # %%
-average_df.to_csv('../Data/Input_files/nclimdiv_PDSI_Azdivs.csv')
-summarystats.to_csv('../Data/Input_files/NewPDSI_manualavg_11272023.csv')
+analysis_period = yearly_pdsi_new[yearly_pdsi_new.index>=1975]
+# del analysis_period['wet']
+# del analysis_period['dry']
+
+analysis_period.to_csv('../Data/Input_files/Yearly_DroughtIndices_updated11282023.csv')
+
 # %%
