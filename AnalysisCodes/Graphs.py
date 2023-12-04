@@ -56,21 +56,21 @@ annual_db = pd.read_csv(filepath, header=1, index_col=0)
 annual_db.head()
 
 # For regulation
-filepath = outputpath+'/Waterlevels_Regulation_updated.csv'
+filepath = outputpath+'/Waterlevels_Regulation_updated_thresh15.csv'
 # filepath = outputpath+'/Waterlevels_Regulation_updated_MAX.csv'
 # filepath = outputpath+'/Waterlevels_Regulation_updated_MIN.csv'
 cat_wl2_reg = pd.read_csv(filepath, index_col=0)
 cat_wl2_reg.head()
 
 # For Access to SW
-filepath = outputpath+'/Waterlevels_AccesstoSW_updated.csv'
+filepath = outputpath+'/Waterlevels_AccesstoSW_updated_thresh15.csv'
 # filepath = outputpath+'/Waterlevels_AccesstoSW_updated_MAX.csv'
 # filepath = outputpath+'/Waterlevels_AccesstoSW_updated_MIN.csv'
 cat_wl2_SW = pd.read_csv(filepath, index_col=0)
 cat_wl2_SW.head()
 
 # %% Importing GRACE analyses
-filepath = filepath = inputpath+'grace_stateavg_yearly.csv'
+filepath = filepath = outputpath+'grace_stateavg_yearly.csv'
 # filepath = outputpath_local+'gracse_remapped_yearly.csv'
 grace_yearly = pd.read_csv(filepath, index_col=0)
 grace_yearly = grace_yearly[:-1]
@@ -155,8 +155,8 @@ a = 1988.5
 b = 1990.5
 c = 1995.5
 d = 1996.5
-# e = 1999.5
-# f = 2000.5
+e = 2020.5
+f = 2021.5
 g = 2001.5
 h = 2003.5
 i = 2005.5
@@ -169,7 +169,7 @@ plt.axvspan(a, b, color=drought_color, alpha=0.5, lw=0
             , label="Severe Drought"
             )
 plt.axvspan(c, d, color=drought_color, alpha=0.5, lw=0)
-# plt.axvspan(e, f, color=drought_color, alpha=0.5, lw=0)
+plt.axvspan(e, f, color=drought_color, alpha=0.5, lw=0)
 plt.axvspan(g, h, color=drought_color, alpha=0.5, lw=0)
 plt.axvspan(i, j, color=drought_color, alpha=0.5, lw=0)
 plt.axvspan(k, l, color=drought_color, alpha=0.5, lw=0)
@@ -192,7 +192,7 @@ ax.set_ylabel('Depth to Water (ft)',fontsize=fsize)
 ax.minorticks_on()
 fig.set_dpi(600.0)
 # ax.set_title('a)',loc='left',pad=15)
-ax.legend(loc='upper left')
+ax.legend(loc='lower left')
 
 #Putting Grace on a secondary axis
 ax2 = ax.twinx()
@@ -301,7 +301,7 @@ ax.plot(xf1, yf4,"-.",color='#CCC339', lw=1)
 ax.plot(xf1, yf5,"-.",color=swdom, lw=1)
 
 min_y = 0
-max_y = 300
+max_y = 400
 fsize = 12
 
 ax.plot(ds['CAP'], label=betterlabels[0], color=cap,zorder=2)
@@ -345,9 +345,8 @@ f.set_index('index', inplace=True)
 
 adb_meandf = f
 
-
 ds = adb_meandf
-min_yr = 2000
+min_yr = 1975
 mx_yr = 2022
 # betterlabels = ['Recieves CAP (Regulated)'
 #                 ,'GW Dominated (Regulated)'
@@ -400,8 +399,8 @@ a = 1988.5
 b = 1990.5
 c = 1995.5
 d = 1996.5
-# e = 1999.5
-# f = 2000.5
+e = 2020.5
+f = 2021.5
 g = 2001.5
 h = 2003.5
 i = 2005.5
@@ -414,7 +413,7 @@ plt.axvspan(a, b, color=drought_color, alpha=0.5, lw=0
             # , label="Drought"
             )
 plt.axvspan(c, d, color=drought_color, alpha=0.5, lw=0)
-# plt.axvspan(e, f, color=drought_color, alpha=0.5, lw=0)
+plt.axvspan(e, f, color=drought_color, alpha=0.5, lw=0)
 plt.axvspan(g, h, color=drought_color, alpha=0.5, lw=0)
 plt.axvspan(i, j, color=drought_color, alpha=0.5, lw=0)
 plt.axvspan(k, l, color=drought_color, alpha=0.5, lw=0)
@@ -432,14 +431,14 @@ ax.set_ylabel('Depth to Water (ft)',fontsize=fsize)
 ax.minorticks_on()
 fig.set_dpi(600.0)
 # ax.set_title('c)',fontsize = fsize,loc='left',pad=15)
-ax.legend()
+ax.legend(loc = 'lower right')
 
 #Putting Grace on a secondary axis
 ax2 = ax.twinx()
 ax2.plot(grace_yearly['0'], label='State Average LWE', color='k',zorder=1)
 ax2.set_ylim([15, -15])
 ax2.set_ylabel(u'Δ LWE (cm)',fontsize=fsize)
-ax2.legend(loc='lower right')
+ax2.legend(loc=[0.702,0.1])
 
 plt.savefig(figurepath+'BonusFigure_StateAverageDTWandGrace', bbox_inches = 'tight')
 # %%
