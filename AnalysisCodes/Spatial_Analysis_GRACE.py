@@ -34,15 +34,15 @@ import glob
 import scipy.stats as sp
 
 # %% Read in the file
-filename = 'CSR_GRACE_GRACE-FO_RL06_Mascons_all-corrections_v02.nc'
-datapath = '../Data/Input_files/GRACE/'
+filename = 'CSR_GRACE_GRACE-FO_RL0602_Mascons_all-corrections.nc'
+datapath = '../Data/Input_files/'
 outputpath = '../Data/Output_files/'
 shapepath = '../Data/Shapefiles/'
 
 grace_dataset = xr.open_dataset(datapath+'/'+filename)
 grace_dataset
 
-# %% Read in the mask shapefile
+# %% Read in the mask shapefiles
 filename = "AZ_counties.shp"
 filepath = os.path.join(shapepath, filename)
 counties = gp.read_file(filepath)
@@ -50,6 +50,19 @@ counties = gp.read_file(filepath)
 filename_georeg = 'georeg_reproject_fixed.shp'
 filepath = os.path.join(shapepath, filename_georeg)
 georeg = gp.read_file(filepath)
+georeg.plot()
+
+# %%
+fn = 'Access_to_SW.shp'
+filepath = os.path.join(shapepath, fn)
+A2SW_shp = gp.read_file(filepath)
+A2SW_shp.plot()
+
+# %%
+fn = 'Regulation.shp'
+filepath = os.path.join(shapepath, fn)
+reg_shp = gp.read_file(filepath)
+reg_shp.plot()
 # %% Look at that sweet sweet data
 metadata = grace_dataset.attrs
 metadata
@@ -93,8 +106,8 @@ lwe2['time'] = time_convert
 datetimeindex = lwe2.indexes['time'].to_datetimeindex()
 lwe2['time'] = datetimeindex
 
-
 # %% ---- Remapping using EASYMORE Package ----
+
 # Fixing GRACE to be datetime suitable for easymore.
 grace2 = grace_dataset
 grace2
@@ -114,12 +127,17 @@ esmr = easymore()
 
 # specifying EASYMORE objects
 # name of the case; the temporary, remapping and remapped file names include case name
-esmr.case_name                = 'easymore_GRACE_georeg'              
+esmr.case_name                = 'easymore_GRACE_drought_georeg'              
+# esmr.case_name                = 'easymore_GRACE_drought_reg'              
+# esmr.case_name                = 'easymore_GRACE_drought_a2sw'              
+
 # temporary path that the EASYMORE generated GIS files and remapped file will be saved
 esmr.temp_dir                 = '../temporary/'
 
 # name of target shapefile that the source netcdf files should be remapped to
 esmr.target_shp = '../Data/Shapefiles/georeg_reproject_fixed.shp'
+# esmr.target_shp = '../Data/Shapefiles/Regulation.shp'
+# esmr.target_shp = '../Data/Shapefiles/Access_to_SW.shp'
 
 # name of netCDF file(s); multiple files can be specified with *
 esmr.source_nc                = 'testGRACE_time.nc'
@@ -176,7 +194,7 @@ shp_target.plot(column= 'value', edgecolor='k',linewidth = 1, ax = axes , legend
 
 
 # %% Now, read in the remapped csv
-filename = 'easymore_GRACE_georeg_remapped_lwe_thickness__2002-04-18-00-00-00.csv'
+filename = esmr.case_name+'_remapped_lwe_thickness__2002-04-18-00-00-00.csv'
 filepath = os.path.join(outputpath, filename)
 grace_remapped = pd.read_csv(filepath)
 grace_remapped.head()
@@ -209,12 +227,26 @@ grace_yearlyavg.plot() #to see if it completed
 grace_remapped.to_csv(outputpath+'grace_remapped.csv')
 grace_yearlyavg.to_csv(outputpath+'grace_remapped_yearly.csv')
 
+# grace_remapped.to_csv(outputpath+'grace_regulated_remapped.csv')
+# grace_yearlyavg.to_csv(outputpath+'grace_regulated_remapped_yearly.csv')
+
+# grace_remapped.to_csv(outputpath+'grace_a2sw_remapped.csv')
+# grace_yearlyavg.to_csv(outputpath+'grace_a2sw_remapped_yearly.csv')
+
 # %%
 # ---- Creating Averages Based off Shape File Mask ----
 # Check the cooridnate systems
-mask = counties
-print("mask crs:", counties.crs)
+# mask = counties
+# mask = georeg
+# mask = reg_shp
+mask = A2SW_shp
+# print("mask crs:", counties.crs)
+print("mask crs: ",mask.crs)
 print("data crs:", lwe2.rio.crs)
+
+# %% Change the coordinate system if needed
+mask = mask.to_crs(4269)
+mask.crs
 
 # %% Clipping based off the mask (not weighted)
 clipped = lwe2.rio.clip(mask.geometry, mask.crs)
