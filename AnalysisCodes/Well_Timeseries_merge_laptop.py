@@ -157,34 +157,150 @@ total_WL = total_WL.rename(columns={"REGISTRY_ID": "Combo_ID",
 total_WL = total_WL.set_index('Combo_ID')
 # total_WL = total_WL['LEN'].astype(int, errors = 'raise')
 total_WL
-total_WL.to_csv(outputpath+'numberWL_perwell_'+str(min_yr)+'-'+str(mx_yr)+'_updated'+')
+# total_WL.to_csv(outputpath+'numberWL_perwell_'+str(min_yr)+'-'+str(mx_yr)+'_updated'+'_thresh'+str(threshold))
 
 # %%
 ds = ds.reset_index()
 # Create a list of narrowed Wells
 well_list = ds[['REGISTRY_ID']]
-
+well_list
+# %%
 # Converting to int
 well_list['REGISTRY_ID'] = well_list['REGISTRY_ID'].astype(int, errors = 'raise')
+well_list
 # %%
 # Formatting timeseries
-# WL_TS = WL_TS_DB_year.copy()
+WL_TS = WL_TS_DB_year.copy()
 # WL_TS = max_TS_DB_year.copy()
-WL_TS = min_TS_DB_year.copy()
+# WL_TS = min_TS_DB_year.copy()
 WL_TS.reset_index(inplace=True)
 # WL_TS
 
+WL_TS.rename(columns={'index':'REGISTRY_ID'}, inplace=True)
+WL_TS
+# %%
 # Add list to the water level database
 narrowedWL_DB = WL_TS.merge(well_list, how="inner")
 narrowedWL_DB.info()
 
 # set index back go REGISTRY_ID
 narrowedWL_DB.set_index('REGISTRY_ID', inplace=True)
+narrowedWL_DB
 # %%
-# narrowedWL_DB.to_csv(outputpath+'Wells55_GWSI_WLTS_DB_annual_updated_thresh'+str(threshold)+'.csv')
+# set index back go REGISTRY_ID
+narrowedWL_DB.set_index('REGISTRY_ID', inplace=True)
+narrowedWL_DB
+# %%
+narrowedWL_DB.to_csv(outputpath+'Wells55_GWSI_WLTS_DB_annual_updated_thresh'+str(threshold)+'.csv')
 # narrowedWL_DB.to_csv(outputpath+'Wells55_GWSI_MAX_WLTS_DB_annual_updated_thresh'+str(threshold)+'.csv')
-narrowedWL_DB.to_csv(outputpath+'Wells55_GWSI_MIN_WLTS_DB_annual_updated_thresh'+str(threshold)+'.csv')
+# narrowedWL_DB.to_csv(outputpath+'Wells55_GWSI_MIN_WLTS_DB_annual_updated_thresh'+str(threshold)+'.csv')
 print('Done.')
+
+# %% == Narrowing to delete wells with extreme readings ==
+# Convert column names to integers for easy comparison
+# narrowedWL_DB.columns = narrowedWL_DB.columns.astype(int)
+well_data_pivot = narrowedWL_DB.copy()
+well_data_pivot.columns = well_data_pivot.columns.get_level_values(1).astype(int)
+
+well_data_pivot
+# %% 
+# Enter min year and max year of timeframe
+minyear = 2000
+maxyear = 2022
+
+# Figure out which water level database you want
+cat_wl2 = well_data_pivot.copy()
+cat_wl2 = cat_wl2.transpose()
+cat_wl2 = cat_wl2.reset_index()
+cat_wl2
+# %%
+cat_wl2['year'] = pd.to_numeric(cat_wl2['year'], errors='coerce')
+cat_wl2.index = cat_wl2.index.astype('int64')
+cat_wl2 = cat_wl2.set_index('year')
+
+cat_wl2
+# Water Analysis period
+wlanalysis_period_AZ = cat_wl2[(cat_wl2.index>=minyear)&(cat_wl2.index<=maxyear)]
+wlanalysis_period_AZ
+# del wlanalysis_period['Res']
+
+# %%
+import scipy.stats as sp
+df_interpolated = wlanalysis_period_AZ.interpolate(method='linear', axis=0)
+df_interpolated = df_interpolated.bfill()
+df_interpolated
+
+# Anomaly's
+ds = df_interpolated.copy()
+columns = ds.columns
+column_list = ds.columns.tolist()
+trend_df = df_interpolated.copy()
+dtw_anomalys_allwells = pd.DataFrame()
+for i in column_list:
+        # Subtracting against the mean
+        # dtw_anomalys[i] = wlanalysis_period[i] - wlanalysis_period[i].mean()
+        
+        # Subtracting against the slope
+        df = ds[i]
+        y=np.array(df.values, dtype=float)
+        # x=np.array(pd.to_datetime(df).index.values, dtype=float)
+        x = np.array(pd.to_datetime(df).index.values, dtype=float)
+        slope, intercept, _, _, _ = sp.linregress(x,y)
+        # print(y)
+        # slope, intercept = sp.linregress(x,y) 
+        trend_df[i] = (x * slope) + intercept
+        # dtw_anomalys_allwells[i] = ds[i] - trend_df[i]
+        
+
+# Use pd.concat to construct the DataFrame efficiently
+dtw_anomalys_allwells = pd.concat([ds[i] - trend_df[i] for i in column_list], axis=1)
+
+dtw_anomalys_allwells
+# %%
+placeholder = dtw_anomalys_allwells.transpose()
+# 
+flagvalue = 75
+# Identify rows where values are either greater than 50 or less than -50 after the year 2000
+rows_to_delete = placeholder.loc[:, 2000:].apply(lambda row: any((row > flagvalue) | (row < -flagvalue)), axis=1)
+
+# Drop the identified rows
+placeholder = placeholder[~rows_to_delete]
+# %%
+placeholder
+
+# %%
+ds = placeholder.copy()
+ds = ds.reset_index()
+# Create a list of narrowed Wells
+well_list2 = ds[['index']]
+
+# %%
+well_list2.rename(columns={'index':'REGISTRY_ID'}, inplace=True)
+well_list2
+# %%
+# Converting to int
+well_list2['REGISTRY_ID'] = well_list2['REGISTRY_ID'].astype(int, errors = 'raise')
+
+well_list2
+# %% 
+well_list2.columns = well_list.columns
+well_list2
+# %%
+# Add list to the water level database
+narrowedWL_DB2 = narrowedWL_DB.copy()
+narrowedWL_DB2 = narrowedWL_DB2.reset_index()
+narrowedWL_DB2
+# %%
+narrowedWL_DB2 = narrowedWL_DB2.merge(well_list2, how="inner")
+narrowedWL_DB2.info()
+
+# %%
+# set index back go REGISTRY_ID
+narrowedWL_DB2.set_index('REGISTRY_ID', inplace=True)
+narrowedWL_DB2
+# %% Writing csv
+narrowedWL_DB2.to_csv(outputpath+'Wells55_GWSI_WLTS_DB_annual_updated_thresh'+str(threshold)+'outliersdeleted.csv')
+
 # %% ====  Summarize by Monthly now ====
 combo_monthly2 = combo.copy()
 combo_monthly2.reset_index(inplace=True)
