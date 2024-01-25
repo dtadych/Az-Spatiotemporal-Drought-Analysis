@@ -139,7 +139,8 @@ reg_list['Combo_ID'] = reg_list['Combo_ID'].astype(np.int64, errors = 'raise')
 # filename_ts = 'Wells55_GWSI_WLTS_DB_annual_updated_thresh15.csv'
 # filename_ts = 'Wells55_GWSI_WLTS_DB_annual_updated.csv'
 # filename_ts = 'Wells55_GWSI_MAX_WLTS_DB_annual_updated_thresh15.csv'
-filename_ts = 'Wells55_GWSI_MIN_WLTS_DB_annual_updated_thresh15.csv'
+filename_ts = 'Wells55_GWSI_WLTS_DB_annual_updated_thresh15outliersdeleted.csv'
+# filename_ts = 'Wells55_GWSI_MIN_WLTS_DB_annual_updated_thresh15.csv'
 filepath = os.path.join(outputpath_local, filename_ts)
 # filepath = os.path.join(inputpath_local, filename_ts)
 print(filepath)
@@ -168,7 +169,7 @@ combo = combo.sort_values(by=['GEOREGI_NU'])
 combo
 
 # %% Exporting the combo table
-combo.to_csv(outputpath_local+'Final_WaterLevels_adjusted_MIN_updated_thresh15.csv')
+# combo.to_csv(outputpath_local+'Final_WaterLevels_adjusted_MIN_updated_thresh15.csv')
 
 # %% Reading in so we don't have to redo the combining, comment as appropriate
 # filepath = outputpath_local+'Final_WaterLevels_adjusted.csv'
@@ -195,6 +196,12 @@ combo_new['Water_CAT'].unique()
 # %% Now for aggregating by category for the timeseries (Spatial Average)
 cat_wl_reg = combo_copy.groupby(['Regulation']).mean()
 cat_wl_SW = combo_new.groupby(['Water_CAT']).mean()
+
+# cat_wl_reg = combo_copy.groupby(['Regulation']).max()
+# cat_wl_SW = combo_new.groupby(['Water_CAT']).max()
+
+# cat_wl_reg = combo_copy.groupby(['Regulation']).min()
+# cat_wl_SW = combo_new.groupby(['Water_CAT']).min()
 cat_wl_SW
 
 # %% 
@@ -231,11 +238,14 @@ cat_wl2_SW = f
 # cat_wl2_reg.to_csv(outputpath_local+'Waterlevels_Regulation_updated_thresh15.csv')
 # cat_wl2_SW.to_csv(outputpath_local+'Waterlevels_AccesstoSW_updated_thresh15.csv')
 
+cat_wl2_reg.to_csv(outputpath_local+'Waterlevels_Regulation_updated_thresh15outliersdeleted.csv')
+cat_wl2_SW.to_csv(outputpath_local+'Waterlevels_AccesstoSW_updated_thresh15outliersdeleted.csv')
+
 # cat_wl2_reg.to_csv(outputpath_local+'Waterlevels_Regulation_updated_MAX_thresh15.csv')
 # cat_wl2_SW.to_csv(outputpath_local+'Waterlevels_AccesstoSW_updated_MAX_thresh15.csv')
 
-cat_wl2_reg.to_csv(outputpath_local+'Waterlevels_Regulation_updated_MIN_thresh15.csv')
-cat_wl2_SW.to_csv(outputpath_local+'Waterlevels_AccesstoSW_updated_MIN_thresh15.csv')
+# cat_wl2_reg.to_csv(outputpath_local+'Waterlevels_Regulation_updated_MIN_thresh15.csv')
+# cat_wl2_SW.to_csv(outputpath_local+'Waterlevels_AccesstoSW_updated_MIN_thresh15.csv')
 # %%  ==== Reading in the data we created above ====
 #          Default is to read from the web, change as appropriate
 # For regulation

@@ -259,7 +259,7 @@ dtw_anomalys_allwells
 # %%
 placeholder = dtw_anomalys_allwells.transpose()
 # 
-flagvalue = 75
+flagvalue = 50
 # Identify rows where values are either greater than 50 or less than -50 after the year 2000
 rows_to_delete = placeholder.loc[:, 2000:].apply(lambda row: any((row > flagvalue) | (row < -flagvalue)), axis=1)
 
