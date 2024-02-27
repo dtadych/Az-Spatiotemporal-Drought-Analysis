@@ -51,6 +51,8 @@ inputpath = inputpath_local
 # For statewide
 filename_ts = 'Wells55_GWSI_WLTS_DB_annual.csv'
 filepath = os.path.join(inputpath, filename_ts)
+# filename_ts = 'Wells55_GWSI_WLTS_DB_annual_updated_thresh15outliersdeleted.csv'
+# filepath = os.path.join(outputpath, filename_ts)
 print(filepath)
 annual_db = pd.read_csv(filepath, header=1, index_col=0)
 annual_db.head()
