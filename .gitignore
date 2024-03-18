@@ -1,3 +1,4 @@
 *.png
 *.nc
 /temporary
+/Data

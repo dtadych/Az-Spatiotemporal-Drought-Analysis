@@ -424,7 +424,7 @@ plt.axvspan(m, n, color=drought_color, alpha=0.5, lw=0)
 ax.plot(ds, label='Arizona Average DTW', color=GWdom,zorder=2)  
 
 ax.set_xlim([min_yr,mx_yr])
-ax.set_ylim(min_y,max_y)
+ax.set_ylim(max_y,min_y)
 # ax.grid(True)
 ax.grid(visible=True,which='major')
 ax.grid(which='minor',color='#EEEEEE', lw=0.8)
@@ -433,14 +433,14 @@ ax.set_ylabel('Depth to Water (ft)',fontsize=fsize)
 ax.minorticks_on()
 fig.set_dpi(600.0)
 # ax.set_title('c)',fontsize = fsize,loc='left',pad=15)
-ax.legend(loc = 'lower right')
+ax.legend(loc = [1.1, 0.50])
 
 #Putting Grace on a secondary axis
 ax2 = ax.twinx()
 ax2.plot(grace_yearly['0'], label='State Average LWE', color='k',zorder=1)
-ax2.set_ylim([15, -15])
+ax2.set_ylim([-15, 15])
 ax2.set_ylabel(u'Δ LWE (cm)',fontsize=fsize)
-ax2.legend(loc=[0.702,0.1])
+ax2.legend(loc=[1.1, 0.41])
 
 plt.savefig(figurepath+'BonusFigure_StateAverageDTWandGrace', bbox_inches = 'tight')
 # %%

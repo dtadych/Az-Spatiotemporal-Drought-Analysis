@@ -716,20 +716,20 @@ ax.plot(ds['PDSI']
         ) 
 
 # Severe Drought Shading
-a = 1988.5
-b = 1990.5
-c = 1995.5
-d = 1996.5
-e = 2020.5
-f = 2021.5
-g = 2001.5
-h = 2003.5
-i = 2005.5
-j = 2007.5
-k = 2011.5
-l = 2014.5
-m = 2017.5
-n = 2018.5
+a = 1988
+b = 1990
+c = 1995
+d = 1996
+e = 2021
+f = 2022
+g = 2002
+h = 2004
+i = 2005
+j = 2008
+k = 2012
+l = 2015
+m = 2018
+n = 2019
 plt.axvspan(a, b, color=drought_color, alpha=0.5, lw=0, label="Severe Drought")
 plt.axvspan(c, d, color=drought_color, alpha=0.5, lw=0)
 plt.axvspan(e, f, color=drought_color, alpha=0.5, lw=0)
@@ -742,7 +742,7 @@ plt.axvspan(m, n, color=drought_color, alpha=0.5, lw=0)
 ax.plot(ds['dry'],'-.',label='Cutoff Value',color='black', zorder=5)
 
 ax.set_xlim(minyear,maxyear)
-ax.set_ylim(min_y,max_y)
+ax.set_ylim(max_y,min_y)
 ax.minorticks_on()
 ax.grid(visible=True,which='major')
 ax.grid(which='minor',color='#EEEEEE', lw=0.8)
@@ -751,7 +751,7 @@ ax.set_xlabel('Year', fontsize=fsize)
 ax.set_ylabel('Index Values',fontsize=fsize)
 ax.legend(loc = [1.04, 0.40], fontsize = fsize)
 fig.set_dpi(600.0)
-# plt.savefig(outputpath+name+'cutoffval_'+str(value), bbox_inches = 'tight')
+plt.savefig(outputpath+name+'cutoffval_'+str(value), bbox_inches = 'tight')
 
 # %%
 analysis_period = yearly_new_indices[yearly_new_indices.index>=1975]
